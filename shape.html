@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+        maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Shape Match! 🔷</title>
+  <link rel="stylesheet" href="shape.css" />
+</head>
+<body>
+
+  <a href="index.html" id="back-btn" title="Menu">&#8592;</a>
+
+  <div class="game">
+    <h1 class="title">Match the Shapes!</h1>
+
+    <!-- Progress dots -->
+    <div class="progress" id="progress"></div>
+
+    <!-- Target slots (outlined shapes) -->
+    <div class="panel panel--slots">
+      <p class="panel-hint">Put them here ↓</p>
+      <div class="shape-grid" id="slotsGrid"></div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="arrow-hint">drag up ↑</div>
+
+    <!-- Draggable pieces (solid shapes) -->
+    <div class="panel panel--pieces">
+      <div class="shape-grid" id="piecesGrid"></div>
+    </div>
+  </div>
+
+  <!-- Full-screen celebration -->
+  <div class="celebration" id="celebration">
+    <div class="celeb-inner">
+      <div class="celeb-emoji" id="celebEmoji"></div>
+      <div class="celeb-text"  id="celebText"></div>
+    </div>
+  </div>
+
+  <script src="shape.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+        maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Game Time! 🎮</title>
+  <link rel="stylesheet" href="menu.css" />
+</head>
+<body>
+
+  <!-- Animated background blobs -->
+  <div class="bg" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+  </div>
+
+  <main class="menu">
+    <h1 class="title">
+      <span class="title-wave">🎮</span> Game Time!
+    </h1>
+
+    <div class="grid">
+
+      <!-- ── Active game ──────────────────────────────────────────────── -->
+      <a href="bubble.html" class="card" style="--c1:#3dd6f5;--c2:#1e90ff;">
+        <div class="card-glow"></div>
+        <div class="card-icon">🫧</div>
+        <div class="card-label">Bubble Pop</div>
+      </a>
+
+      <!-- ── Coming-soon placeholders ─────────────────────────────────── -->
+      <div class="card card--soon" style="--c1:#f78ca0;--c2:#f9748f;">
+        <div class="card-glow"></div>
+        <div class="card-icon">🎨</div>
+        <div class="card-label">Color Splash</div>
+        <div class="soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="card card--soon" style="--c1:#a78bfa;--c2:#7c3aed;">
+        <div class="card-glow"></div>
+        <div class="card-icon">🎵</div>
+        <div class="card-label">Music Time</div>
+        <div class="soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="card card--soon" style="--c1:#34d399;--c2:#059669;">
+        <div class="card-glow"></div>
+        <div class="card-icon">🐾</div>
+        <div class="card-label">Animal Friends</div>
+        <div class="soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="card card--soon" style="--c1:#fbbf24;--c2:#f59e0b;">
+        <div class="card-glow"></div>
+        <div class="card-icon">⭐</div>
+        <div class="card-label">Star Catch</div>
+        <div class="soon-badge">Coming Soon</div>
+      </div>
+
+      <a href="shape.html" class="card" style="--c1:#fb923c;--c2:#ea580c;">
+        <div class="card-glow"></div>
+        <div class="card-icon">🔷</div>
+        <div class="card-label">Shape Match</div>
+      </a>
+
+    </div>
+  </main>
+
+  <script src="menu.js"></script>
+</body>
+</html>

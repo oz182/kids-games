@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Xcode / Swift (not needed for the web app)
+*.xcodeproj/
+*.xcworkspace/
+*.swift
+xcuserdata/
+DerivedData/
+
+# Python
+__pycache__/
+*.pyc
+
+# Local Claude config (machine-specific)
+.claude/settings.local.json
