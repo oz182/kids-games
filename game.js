@@ -380,6 +380,8 @@ class BubbleGame {
     // Haptic (supported on mobile browsers)
     if (navigator.vibrate) navigator.vibrate(28);
 
+    playPop(bubble.radius);
+
     const { x, y, color, radius } = bubble;
     const count = randInt(9, 13);
 
@@ -402,6 +404,7 @@ class BubbleGame {
   _celebrate() {
     this.labels.push(new CelebLabel(this.W, this.H));
     for (let i = 0; i < 22; i++) this.stars.push(new Star(this.W, this.H));
+    playCelebration();
   }
 
   // ── Spawning ─────────────────────────────────────────────────────────────
@@ -492,6 +495,59 @@ class BubbleGame {
 
     this._drawIntro(t);
   }
+}
+
+// ── Audio ─────────────────────────────────────────────────────────────────────
+
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+/** Bubble pop — pitch drops quickly, pitch varies with bubble size */
+function playPop(radius) {
+  try {
+    const ctx      = getAudioCtx();
+    // Smaller bubble → higher-pitched pop
+    const baseFreq = 680 - (radius - 40) * 4.5;
+    const pitch    = baseFreq * (0.88 + Math.random() * 0.24);
+
+    const osc = ctx.createOscillator();
+    const env = ctx.createGain();
+    osc.type = 'sine';
+    osc.connect(env);
+    env.connect(ctx.destination);
+
+    const t = ctx.currentTime;
+    osc.frequency.setValueAtTime(pitch, t);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 0.25, t + 0.12);
+    env.gain.setValueAtTime(0.22, t);
+    env.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    osc.start(t);
+    osc.stop(t + 0.16);
+  } catch (_) { /* audio blocked */ }
+}
+
+/** Ascending arpeggio played every 10 pops */
+function playCelebration() {
+  try {
+    const ctx   = getAudioCtx();
+    const notes = [523, 659, 784, 1047];   // C–E–G–C
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const env = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc.connect(env);
+      env.connect(ctx.destination);
+      const t = ctx.currentTime + i * 0.13;
+      env.gain.setValueAtTime(0.16, t);
+      env.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+      osc.start(t);
+      osc.stop(t + 0.43);
+    });
+  } catch (_) { /* audio blocked */ }
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────

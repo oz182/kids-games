@@ -247,7 +247,7 @@ function snapToSlot(clone, pieceEl, slot) {
 
     // Particles + sound
     spawnParticles(sr.left + sr.width / 2, sr.top + sr.height / 2, shape.color);
-    playTone([523, 659, 784], 0.13);  // C–E–G arpeggio
+    playTone([523, 659, 784], 0.14, 'sine', 0.45);  // C–E–G arpeggio
 
     placedCount++;
     updateDots();
@@ -362,7 +362,7 @@ function showCelebration() {
   const el = document.getElementById('celebration');
   el.classList.add('active');
 
-  playTone([523, 659, 784, 1047], 0.18); // victory chord
+  playTone([523, 659, 784, 1047], 0.18, 'sine', 0.55); // victory arpeggio
 
   for (let i = 0; i < 35; i++)
     setTimeout(spawnConfetti, Math.random() * 900);
@@ -382,7 +382,7 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-function playTone(freqs, gain = 0.15, type = 'sine') {
+function playTone(freqs, gain = 0.15, type = 'sine', duration = 0.38) {
   try {
     const ctx = getAudioCtx();
     freqs.forEach((freq, i) => {
@@ -394,9 +394,9 @@ function playTone(freqs, gain = 0.15, type = 'sine') {
       env.connect(ctx.destination);
       const t = ctx.currentTime + i * 0.11;
       env.gain.setValueAtTime(gain, t);
-      env.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      env.gain.exponentialRampToValueAtTime(0.001, t + duration);
       osc.start(t);
-      osc.stop(t + 0.36);
+      osc.stop(t + duration + 0.01);
     });
   } catch (_) { /* audio blocked – silent fallback */ }
 }
