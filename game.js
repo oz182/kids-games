@@ -508,8 +508,9 @@ function getAudioCtx() {
 /** Bubble pop — pitch drops quickly, pitch varies with bubble size */
 function playPop(radius) {
   try {
-    const ctx      = getAudioCtx();
-    // Smaller bubble → higher-pitched pop
+    const ctx = getAudioCtx();
+    ctx.resume();                           // browsers auto-suspend AudioContext
+
     const baseFreq = 680 - (radius - 40) * 4.5;
     const pitch    = baseFreq * (0.88 + Math.random() * 0.24);
 
@@ -519,7 +520,7 @@ function playPop(radius) {
     osc.connect(env);
     env.connect(ctx.destination);
 
-    const t = ctx.currentTime;
+    const t = ctx.currentTime + 0.02;      // small offset lets resume() take effect
     osc.frequency.setValueAtTime(pitch, t);
     osc.frequency.exponentialRampToValueAtTime(pitch * 0.25, t + 0.12);
     env.gain.setValueAtTime(0.22, t);
@@ -532,7 +533,9 @@ function playPop(radius) {
 /** Ascending arpeggio played every 10 pops */
 function playCelebration() {
   try {
-    const ctx   = getAudioCtx();
+    const ctx = getAudioCtx();
+    ctx.resume();
+
     const notes = [523, 659, 784, 1047];   // C–E–G–C
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
@@ -541,7 +544,7 @@ function playCelebration() {
       osc.frequency.value = freq;
       osc.connect(env);
       env.connect(ctx.destination);
-      const t = ctx.currentTime + i * 0.13;
+      const t = ctx.currentTime + 0.02 + i * 0.13;
       env.gain.setValueAtTime(0.16, t);
       env.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
       osc.start(t);
