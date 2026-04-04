@@ -385,6 +385,7 @@ function getAudioCtx() {
 function playTone(freqs, gain = 0.15, type = 'sine', duration = 0.38) {
   try {
     const ctx = getAudioCtx();
+    ctx.resume();                           // browsers auto-suspend AudioContext
     freqs.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const env = ctx.createGain();
@@ -392,7 +393,7 @@ function playTone(freqs, gain = 0.15, type = 'sine', duration = 0.38) {
       osc.frequency.value = freq;
       osc.connect(env);
       env.connect(ctx.destination);
-      const t = ctx.currentTime + i * 0.11;
+      const t = ctx.currentTime + 0.02 + i * 0.11;   // 0.02 s offset for resume
       env.gain.setValueAtTime(gain, t);
       env.gain.exponentialRampToValueAtTime(0.001, t + duration);
       osc.start(t);
