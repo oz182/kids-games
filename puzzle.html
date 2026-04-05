@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+        maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Puzzle Pieces! 🧩</title>
+  <link rel="stylesheet" href="puzzle.css" />
+</head>
+<body>
+  <a href="index.html" id="back-btn" title="Menu">&#8592;</a>
+
+  <div class="game">
+    <h1 class="title" id="puzzle-title"></h1>
+    <div class="progress" id="progress"></div>
+
+    <div class="panel panel--slots">
+      <p class="panel-hint">Build the picture ↓</p>
+      <div class="shape-grid" id="slotsGrid"></div>
+    </div>
+
+    <div class="arrow-hint">drag up ↑</div>
+
+    <div class="panel panel--pieces">
+      <div class="shape-grid" id="piecesGrid"></div>
+    </div>
+  </div>
+
+  <div class="celebration" id="celebration">
+    <div class="celeb-inner">
+      <div class="celeb-emoji" id="celebEmoji"></div>
+      <div class="celeb-text"  id="celebText"></div>
+    </div>
+  </div>
+
+  <script src="puzzle.js"></script>
+</body>
+</html>

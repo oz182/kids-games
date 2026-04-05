@@ -109,6 +109,9 @@ body {
 .card:nth-child(4) { animation-delay: 0.26s; }
 .card:nth-child(5) { animation-delay: 0.33s; }
 .card:nth-child(6) { animation-delay: 0.40s; }
+.card:nth-child(7) { animation-delay: 0.47s; }
+.card:nth-child(8) { animation-delay: 0.54s; }
+.card:nth-child(9) { animation-delay: 0.61s; }
 
 @keyframes popIn {
   from { transform: scale(0.6); opacity: 0; }
