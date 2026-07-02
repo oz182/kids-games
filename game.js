@@ -10,29 +10,36 @@ const rgba     = (c, a)   => `rgba(${c.r},${c.g},${c.b},${a})`;
 // ── Palette (vivid, high-contrast — great for babies) ────────────────────────
 
 const COLORS = [
-  { r: 255, g:  82, b:  82 },   // red
-  { r: 255, g: 158, b:  46 },   // orange
-  { r: 250, g: 224, b:  46 },   // yellow
-  { r:  72, g: 224, b: 102 },   // green
-  { r:  71, g: 148, b: 255 },   // blue
-  { r: 184, g:  77, b: 255 },   // purple
-  { r: 255, g:  82, b: 184 },   // pink
-  { r:  46, g: 224, b: 224 },   // cyan
+  { r: 255, g:  82, b:  82, name: 'red'    },
+  { r: 255, g: 158, b:  46, name: 'orange' },
+  { r: 250, g: 224, b:  46, name: 'yellow' },
+  { r:  72, g: 224, b: 102, name: 'green'  },
+  { r:  71, g: 148, b: 255, name: 'blue'   },
+  { r: 184, g:  77, b: 255, name: 'purple' },
+  { r: 255, g:  82, b: 184, name: 'pink'   },
+  { r:  46, g: 224, b: 224, name: 'cyan'   },
 ];
+
+const GOLD = { r: 255, g: 214, b: 64, name: 'gold' };
+
+// Hue-spread palette used when a rainbow bubble bursts
+const RAINBOW = [COLORS[0], COLORS[1], COLORS[2], COLORS[3], COLORS[4], COLORS[5]];
 
 // ── Bubble ───────────────────────────────────────────────────────────────────
 
 class Bubble {
-  constructor(W, H) {
-    this.radius   = rand(40, 72);
-    this.color    = COLORS[randInt(0, COLORS.length)];
+  constructor(W, H, kind = 'normal') {
+    this.kind     = kind;                            // 'normal' | 'star' | 'rainbow'
+    this.radius   = kind === 'normal' ? rand(48, 78) : rand(58, 80);
+    this.color    = kind === 'star' ? GOLD : COLORS[randInt(0, COLORS.length)];
     this.startX   = rand(this.radius + 12, W - this.radius - 12);
     this.x        = this.startX;
     this.y        = H + this.radius + 10;           // start below screen
     this.startY   = this.y;
     this.targetY  = -(this.radius + 20);            // exit above screen
     this.born     = now();
-    this.duration = rand(6000, 10000);              // ms to cross screen
+    // Specials drift up slowly so they're easy to catch
+    this.duration = kind === 'normal' ? rand(6000, 10000) : rand(9000, 12000);
     this.wobbleA  = rand(18, 34);                   // px amplitude
     this.wobbleP  = rand(1200, 2000);               // ms period
     this.alive    = true;
@@ -91,13 +98,28 @@ class Bubble {
     // Filled body
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fillStyle = rgba(color, 0.28);
+    ctx.fillStyle = rgba(color, this.kind === 'star' ? 0.36 : 0.28);
     ctx.fill();
 
-    // Outer stroke
-    ctx.strokeStyle = rgba(color, 0.80);
-    ctx.lineWidth   = 3.5;
+    // Outer stroke — rainbow bubbles get a multicolor rim
+    if (this.kind === 'rainbow') {
+      const rim = ctx.createLinearGradient(-r, -r, r, r);
+      RAINBOW.forEach((c, i) => rim.addColorStop(i / (RAINBOW.length - 1), rgba(c, 0.9)));
+      ctx.strokeStyle = rim;
+      ctx.lineWidth   = 5;
+    } else {
+      ctx.strokeStyle = rgba(color, 0.80);
+      ctx.lineWidth   = 3.5;
+    }
     ctx.stroke();
+
+    // Icon inside special bubbles
+    if (this.kind !== 'normal') {
+      ctx.font         = `${Math.round(r * 0.85)}px sans-serif`;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.kind === 'star' ? '⭐' : '🌈', 0, 2);
+    }
 
     // Inner rim
     ctx.beginPath();
@@ -324,6 +346,18 @@ class BubbleGame {
 
     this.W = W;
     this.H = H;
+
+    // Cache the sky gradient — rebuilt only on resize, not every frame
+    const g = this.ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#5fb8ff');
+    g.addColorStop(1, '#c8edff');
+    this.bgGrad = g;
+
+    // Keep in-flight bubbles inside the new width
+    for (const b of this.bubbles ?? []) {
+      const margin = b.radius + 12;
+      b.startX = Math.min(Math.max(b.startX, margin), Math.max(W - margin, margin));
+    }
   }
 
   _seedClouds() {
@@ -340,22 +374,24 @@ class BubbleGame {
   _bindEvents() {
     window.addEventListener('resize', () => this._resize());
 
-    const tap = (px, py) => this._handleTap(px, py);
-
-    this.canvas.addEventListener('mousedown', e => {
-      const r = this.canvas.getBoundingClientRect();
-      tap((e.clientX - r.left) * (this.W / r.width),
-          (e.clientY - r.top)  * (this.H / r.height));
-    });
-
-    this.canvas.addEventListener('touchstart', e => {
+    // Pointer events cover mouse + touch; fires once per finger, so
+    // multi-touch popping still works
+    this.canvas.addEventListener('pointerdown', e => {
       e.preventDefault();
       const r = this.canvas.getBoundingClientRect();
-      for (const t of e.changedTouches) {
-        tap((t.clientX - r.left) * (this.W / r.width),
-            (t.clientY - r.top)  * (this.H / r.height));
-      }
-    }, { passive: false });
+      this._handleTap((e.clientX - r.left) * (this.W / r.width),
+                      (e.clientY - r.top)  * (this.H / r.height));
+    });
+
+    // rAF pauses while the tab is hidden but the clock keeps running; shift
+    // bubble birth times forward so the sky isn't empty when we come back
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { this._hiddenAt = now(); return; }
+      const gap = now() - (this._hiddenAt ?? now());
+      for (const b of this.bubbles) b.born += gap;
+      this.lastSpawn = now();
+      this.lastCloud = now();
+    });
   }
 
   // ── Input ────────────────────────────────────────────────────────────────
@@ -377,18 +413,32 @@ class BubbleGame {
     this.score++;
     this._updateHUD();
 
+    Sound.pop();
+
     // Haptic (supported on mobile browsers)
     if (navigator.vibrate) navigator.vibrate(28);
 
-    playPop(bubble.radius);
+    const { x, y, radius } = bubble;
 
-    const { x, y, color, radius } = bubble;
-    const count = randInt(9, 13);
+    if (bubble.kind === 'star') {
+      Sound.sparkle();
+      Speech.say(Speech.WORDS.star, { minGap: 900 });
+      for (let i = 0; i < 14; i++) this.stars.push(new Star(this.W, this.H));
+    } else if (bubble.kind === 'rainbow') {
+      Sound.sparkle();
+      Speech.say(Speech.WORDS.colors.rainbow, { minGap: 900 });
+    } else {
+      Speech.say(Speech.WORDS.colors[bubble.color.name], { minGap: 1600 });
+    }
+
+    // Rainbow bubbles burst into every color at once
+    const burst = bubble.kind === 'rainbow' ? RAINBOW : [bubble.color];
+    const count = randInt(9, 13) + (bubble.kind === 'rainbow' ? 6 : 0);
 
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2 + rand(-0.35, 0.35);
       const dist  = rand(radius * 0.75, radius * 1.55);
-      this.particles.push(new Particle(x, y, color, angle, dist));
+      this.particles.push(new Particle(x, y, burst[i % burst.length], angle, dist));
     }
 
     if (this.score % 10 === 0) this._celebrate();
@@ -404,14 +454,17 @@ class BubbleGame {
   _celebrate() {
     this.labels.push(new CelebLabel(this.W, this.H));
     for (let i = 0; i < 22; i++) this.stars.push(new Star(this.W, this.H));
-    playCelebration();
+    Sound.victory();
+    Speech.praise();
   }
 
   // ── Spawning ─────────────────────────────────────────────────────────────
 
   _maybeSpawn(t) {
     if (t - this.lastSpawn > this.spawnInterval) {
-      this.bubbles.push(new Bubble(this.W, this.H));
+      const roll = Math.random();
+      const kind = roll < 0.10 ? 'star' : roll < 0.18 ? 'rainbow' : 'normal';
+      this.bubbles.push(new Bubble(this.W, this.H, kind));
       this.lastSpawn     = t;
       this.spawnInterval = rand(750, 1350);
     }
@@ -452,11 +505,7 @@ class BubbleGame {
 
   _drawBackground() {
     const { ctx, W, H } = this;
-    // Redraw gradient each frame (cheap on modern GPUs; keeps resize seamless)
-    const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#5fb8ff');
-    g.addColorStop(1, '#c8edff');
-    ctx.fillStyle = g;
+    ctx.fillStyle = this.bgGrad;
     ctx.fillRect(0, 0, W, H);
   }
 
@@ -495,62 +544,6 @@ class BubbleGame {
 
     this._drawIntro(t);
   }
-}
-
-// ── Audio ─────────────────────────────────────────────────────────────────────
-
-let _audioCtx = null;
-function getAudioCtx() {
-  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return _audioCtx;
-}
-
-/** Bubble pop — pitch drops quickly, pitch varies with bubble size */
-function playPop(radius) {
-  try {
-    const ctx = getAudioCtx();
-    ctx.resume();                           // browsers auto-suspend AudioContext
-
-    const baseFreq = 680 - (radius - 40) * 4.5;
-    const pitch    = baseFreq * (0.88 + Math.random() * 0.24);
-
-    const osc = ctx.createOscillator();
-    const env = ctx.createGain();
-    osc.type = 'sine';
-    osc.connect(env);
-    env.connect(ctx.destination);
-
-    const t = ctx.currentTime + 0.02;      // small offset lets resume() take effect
-    osc.frequency.setValueAtTime(pitch, t);
-    osc.frequency.exponentialRampToValueAtTime(pitch * 0.25, t + 0.12);
-    env.gain.setValueAtTime(0.22, t);
-    env.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-    osc.start(t);
-    osc.stop(t + 0.16);
-  } catch (_) { /* audio blocked */ }
-}
-
-/** Ascending arpeggio played every 10 pops */
-function playCelebration() {
-  try {
-    const ctx = getAudioCtx();
-    ctx.resume();
-
-    const notes = [523, 659, 784, 1047];   // C–E–G–C
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const env = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      osc.connect(env);
-      env.connect(ctx.destination);
-      const t = ctx.currentTime + 0.02 + i * 0.13;
-      env.gain.setValueAtTime(0.16, t);
-      env.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
-      osc.start(t);
-      osc.stop(t + 0.43);
-    });
-  } catch (_) { /* audio blocked */ }
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────

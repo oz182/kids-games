@@ -30,7 +30,38 @@ const SHAPES = [
     // Mathematically correct 5-pointed star (R=45, r=18, centred at 50,50)
     path:  '<polygon points="50,5 61,35 93,36 67,56 76,86 50,68 24,86 33,56 7,36 39,35"/>',
   },
+  {
+    id:    'heart',
+    label: 'Heart',
+    color: '#FF2D55',         // rose
+    path:  '<path d="M50 88 C22 66 8 47 8 31 C8 17 19 8 31 8 C40 8 47 13 50 21 C53 13 60 8 69 8 C81 8 92 17 92 31 C92 47 78 66 50 88 Z"/>',
+  },
+  {
+    id:    'moon',
+    label: 'Moon',
+    color: '#FFD60A',         // gold
+    // Crescent: big arc out, smaller arc back
+    path:  '<path d="M64 5 A46 46 0 1 0 64 95 A37 37 0 1 1 64 5 Z"/>',
+  },
+  {
+    id:    'diamond',
+    label: 'Diamond',
+    color: '#BF5AF2',         // violet
+    path:  '<polygon points="50,4 92,50 50,96 8,50"/>',
+  },
+  {
+    id:    'oval',
+    label: 'Oval',
+    color: '#64D2FF',         // sky
+    path:  '<ellipse cx="50" cy="50" rx="45" ry="31"/>',
+  },
 ];
+
+/** How many shapes this round uses — grows gently as rounds are completed */
+function shapesForRound(round) {
+  const count = round < 2 ? 3 : round < 4 ? 4 : 5;
+  return [...SHAPES].sort(() => Math.random() - 0.5).slice(0, count);
+}
 
 // ── SVG helpers ──────────────────────────────────────────────────────────────
 
@@ -69,6 +100,7 @@ let slots       = [];   // { id, el, filled }
 let pieces      = [];   // { id, el, placed }
 let placedCount = 0;
 let roundCount  = 0;
+let roundShapes = [];   // subset of SHAPES in play this round
 
 // Single drag state
 const drag = {
@@ -84,6 +116,7 @@ const drag = {
 
 function initRound() {
   placedCount = 0;
+  roundShapes = shapesForRound(roundCount);
 
   const slotsGrid  = document.getElementById('slotsGrid');
   const piecesGrid = document.getElementById('piecesGrid');
@@ -96,15 +129,16 @@ function initRound() {
   pieces = [];
 
   // Progress dots
-  SHAPES.forEach((_, i) => {
+  roundShapes.forEach((_, i) => {
     const dot = document.createElement('div');
     dot.className = 'dot';
     dot.id = `dot-${i}`;
     progress.appendChild(dot);
   });
 
-  // Slots – displayed in fixed order
-  SHAPES.forEach(shape => {
+  // Slots – shuffled independently of the pieces
+  const slotOrder = [...roundShapes].sort(() => Math.random() - 0.5);
+  slotOrder.forEach(shape => {
     const el = document.createElement('div');
     el.className = 'slot';
     el.dataset.shapeId = shape.id;
@@ -114,7 +148,7 @@ function initRound() {
   });
 
   // Pieces – shuffled so positions vary each round
-  const shuffled = [...SHAPES].sort(() => Math.random() - 0.5);
+  const shuffled = [...roundShapes].sort(() => Math.random() - 0.5);
   shuffled.forEach(shape => {
     const el = document.createElement('div');
     el.className = 'piece';
@@ -245,14 +279,15 @@ function snapToSlot(clone, pieceEl, slot) {
     slot.el.classList.add('filled');
     slot.filled = true;
 
-    // Particles + sound
+    // Particles + sound + shape name in Hebrew
     spawnParticles(sr.left + sr.width / 2, sr.top + sr.height / 2, shape.color);
-    playTone([523, 659, 784], 0.14, 'sine', 0.45);  // C–E–G arpeggio
+    Sound.tone([523, 659, 784], { gain: 0.13 });  // C–E–G arpeggio
+    Speech.say(Speech.WORDS.shapes[shape.id]);
 
     placedCount++;
     updateDots();
 
-    if (placedCount === SHAPES.length) setTimeout(showCelebration, 550);
+    if (placedCount === roundShapes.length) setTimeout(showCelebration, 550);
   }, 340);
 }
 
@@ -268,7 +303,7 @@ function returnPiece(clone, pieceEl) {
   clone.style.top       = `${origRect.top}px`;
   clone.style.transform = 'scale(1)';
 
-  playTone([220], 0.06, 'sawtooth');  // low buzz
+  Sound.buzz();
 
   setTimeout(() => {
     clone.remove();
@@ -362,7 +397,8 @@ function showCelebration() {
   const el = document.getElementById('celebration');
   el.classList.add('active');
 
-  playTone([523, 659, 784, 1047], 0.18, 'sine', 0.55); // victory arpeggio
+  Sound.victory();
+  Speech.praise();
 
   for (let i = 0; i < 35; i++)
     setTimeout(spawnConfetti, Math.random() * 900);
@@ -372,34 +408,6 @@ function showCelebration() {
     roundCount++;
     setTimeout(initRound, 500);
   }, 2800);
-}
-
-// ── Web Audio tone ───────────────────────────────────────────────────────────
-
-let audioCtx = null;
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-
-function playTone(freqs, gain = 0.15, type = 'sine', duration = 0.38) {
-  try {
-    const ctx = getAudioCtx();
-    ctx.resume();                           // browsers auto-suspend AudioContext
-    freqs.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const env = ctx.createGain();
-      osc.type = type;
-      osc.frequency.value = freq;
-      osc.connect(env);
-      env.connect(ctx.destination);
-      const t = ctx.currentTime + 0.02 + i * 0.11;   // 0.02 s offset for resume
-      env.gain.setValueAtTime(gain, t);
-      env.gain.exponentialRampToValueAtTime(0.001, t + duration);
-      osc.start(t);
-      osc.stop(t + duration + 0.01);
-    });
-  } catch (_) { /* audio blocked – silent fallback */ }
 }
 
 // ── Pointer helper ───────────────────────────────────────────────────────────
