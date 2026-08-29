@@ -1,0 +1,224 @@
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'Arial Hebrew', 'Noto Sans Hebrew', 'Avenir Next',
+               'Helvetica Neue', Arial, sans-serif;
+  touch-action: none;
+  user-select: none; -webkit-user-select: none;
+  background: linear-gradient(160deg, #042f2e 0%, #0f766e 55%, #14b8a6 100%);
+}
+
+/* ── Back button (shared style) ─────────────────────────────────────────── */
+#back-btn {
+  position: fixed; top: 18px; left: 18px; z-index: 200;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  border: 2px solid rgba(255,255,255,0.45);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; color: #fff; text-decoration: none;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  transition: transform .15s ease, background .15s ease;
+}
+#back-btn:hover  { background: rgba(255,255,255,0.42); transform: scale(1.10); }
+#back-btn:active { transform: scale(0.92); }
+
+/* ── Game shell ─────────────────────────────────────────────────────────── */
+.game {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 76px 18px 22px;
+  gap: clamp(12px, 3vh, 24px);
+}
+
+.title {
+  font-size: clamp(1.2rem, 4.4vw, 2rem);
+  font-weight: 800; color: #fff;
+  text-shadow: 0 3px 16px rgba(0,0,0,0.35);
+  text-align: center;
+}
+
+/* ── Progress dots ──────────────────────────────────────────────────────── */
+.progress { display: flex; gap: 10px; }
+
+.dot {
+  width: 15px; height: 15px; border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  border: 2px solid rgba(255,255,255,0.45);
+  transition: background .3s, transform .3s, box-shadow .3s;
+}
+.dot.done {
+  background: #fff; transform: scale(1.25);
+  box-shadow: 0 0 10px rgba(255,255,255,0.7);
+}
+
+/* ── Stage: the equation and the merged result share this slot ──────────── */
+.stage {
+  width: 100%; max-width: 560px;
+  min-height: clamp(150px, 28vh, 230px);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.equation {
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(6px, 2vw, 14px);
+  width: 100%;
+  /* Numbers read left-to-right even inside a Hebrew page */
+  direction: ltr;
+}
+.equation.hidden, .result.hidden { display: none; }
+
+.op {
+  font-size: clamp(2rem, 8vw, 3.2rem);
+  font-weight: 900; color: #fff;
+  text-shadow: 0 3px 12px rgba(0,0,0,0.35);
+  flex: 0 0 auto;
+}
+
+/* ── Basket holding one group of objects ────────────────────────────────── */
+.basket {
+  flex: 1 1 0;
+  min-height: clamp(120px, 22vh, 190px);
+  display: flex; flex-wrap: wrap;
+  align-items: center; align-content: center; justify-content: center;
+  gap: clamp(2px, 1.2vw, 8px);
+  padding: clamp(8px, 2vw, 14px);
+  border-radius: 26px;
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── One countable object ───────────────────────────────────────────────── */
+.obj {
+  font-size: clamp(2.5rem, 10.5vw, 3.4rem);
+  line-height: 1.05;
+  padding: 4px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.28));
+  transition: transform .18s ease, filter .18s ease;
+  animation: objIn .38s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+@keyframes objIn {
+  from { transform: scale(0.2); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.obj:active { transform: scale(0.86); }
+
+/* Tapped while counting — stays visible, just marked */
+.obj.counted {
+  filter: drop-shadow(0 0 12px #fde047) brightness(1.25);
+  transform: scale(1.08);
+}
+
+/* ── Merged result row ──────────────────────────────────────────────────── */
+.result {
+  width: 100%;
+  min-height: clamp(120px, 22vh, 190px);
+  display: flex; flex-wrap: wrap;
+  align-items: center; align-content: center; justify-content: center;
+  gap: clamp(3px, 1.4vw, 10px);
+  padding: clamp(8px, 2vw, 14px);
+  border-radius: 26px;
+  background: rgba(253,224,71,0.16);
+  border: 2px solid rgba(253,224,71,0.45);
+}
+
+.result .obj { animation: countPop .42s cubic-bezier(.34,1.56,.64,1) backwards; }
+@keyframes countPop {
+  from { transform: scale(0.2) translateY(-16px); opacity: 0; }
+  to   { transform: scale(1)   translateY(0);     opacity: 1; }
+}
+
+/* ── Number choices ─────────────────────────────────────────────────────── */
+.choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(10px, 3vw, 20px);
+  width: 100%; max-width: 440px;
+  direction: ltr;
+}
+
+.num {
+  aspect-ratio: 1.15;
+  min-height: 76px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 26px;
+  background: linear-gradient(150deg, var(--c1), var(--c2));
+  box-shadow: 0 6px 20px rgba(0,0,0,0.32),
+              inset 0 1px 0 rgba(255,255,255,0.28);
+  font-size: clamp(2.4rem, 10vw, 3.6rem);
+  font-weight: 900; color: #fff;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.30);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: transform .18s ease, opacity .25s ease, box-shadow .2s ease;
+  /* `backwards` so the finished animation releases opacity/transform
+     back to .num:active and .num.fade */
+  animation: popIn .4s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+.num:nth-child(2) { animation-delay: .07s; }
+.num:nth-child(3) { animation-delay: .14s; }
+
+@keyframes popIn {
+  from { transform: scale(0.55); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.num:active  { transform: scale(0.92); }
+.num.correct {
+  box-shadow: 0 0 0 5px #fde047, 0 8px 28px rgba(0,0,0,0.35);
+  animation: rightPop .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes rightPop {
+  0%   { transform: scale(1);    }
+  45%  { transform: scale(1.18); }
+  100% { transform: scale(1);    }
+}
+.num.wrong { animation: shake .45s ease both; opacity: .55; }
+@keyframes shake {
+  0%,100% { transform: translateX(0);     }
+  20%     { transform: translateX(-11px); }
+  40%     { transform: translateX(9px);   }
+  60%     { transform: translateX(-6px);  }
+  80%     { transform: translateX(4px);   }
+}
+.num.fade { opacity: .25; transform: scale(.9); }
+
+/* ── Celebration ────────────────────────────────────────────────────────── */
+.celebration {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  opacity: 0; pointer-events: none;
+  transition: opacity .35s ease;
+}
+.celebration.active { opacity: 1; pointer-events: auto; }
+
+.celeb-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  animation: celebBounce .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.celeb-emoji { font-size: clamp(4rem, 15vw, 7rem); line-height: 1; }
+.celeb-text  {
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  font-weight: 900; color: #fff;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  text-align: center;
+}
+@keyframes celebBounce {
+  from { transform: scale(0.3); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Short screens ──────────────────────────────────────────────────────── */
+@media (max-height: 640px) {
+  .game    { gap: 10px; padding-top: 68px; }
+  .stage   { min-height: 140px; }
+  .basket,
+  .result  { min-height: 116px; }
+}
