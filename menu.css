@@ -42,18 +42,19 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 24px 48px;
+  justify-content: safe center;
+  padding: 28px 18px 36px;
   min-height: 100vh;
 }
 
 /* ── Title ──────────────────────────────────────────────────────────────── */
 .title {
-  font-size: clamp(2rem, 7vw, 3.4rem);
+  font-size: clamp(1.6rem, 5.5vw, 2.6rem);
   font-weight: 800;
   color: #fff;
   text-shadow: 0 4px 24px rgba(0,0,0,0.4);
   letter-spacing: -0.5px;
-  margin-bottom: 44px;
+  margin-bottom: 24px;
   text-align: center;
 }
 
@@ -73,10 +74,10 @@ body {
 /* ── Grid ───────────────────────────────────────────────────────────────── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(180px, 42vw), 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(min(124px, 27vw), 1fr));
+  gap: 14px;
   width: 100%;
-  max-width: 860px;
+  max-width: 700px;
 }
 
 /* ── Card ───────────────────────────────────────────────────────────────── */
@@ -86,12 +87,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   aspect-ratio: 1;
-  border-radius: 28px;
+  border-radius: 20px;
   background: linear-gradient(145deg, var(--c1), var(--c2));
   box-shadow:
-    0 8px 32px rgba(0,0,0,0.35),
+    0 5px 18px rgba(0,0,0,0.32),
     inset 0 1px 0 rgba(255,255,255,0.25);
   overflow: hidden;
   cursor: pointer;
@@ -112,6 +113,7 @@ body {
 .card:nth-child(7) { animation-delay: 0.47s; }
 .card:nth-child(8) { animation-delay: 0.54s; }
 .card:nth-child(9) { animation-delay: 0.61s; }
+.card:nth-child(10){ animation-delay: 0.68s; }
 
 @keyframes popIn {
   from { transform: scale(0.6); opacity: 0; }
@@ -136,7 +138,7 @@ body {
 a.card .card-glow {
   position: absolute;
   inset: -2px;
-  border-radius: 30px;
+  border-radius: 22px;
   background: linear-gradient(145deg, var(--c1), var(--c2));
   filter: blur(18px);
   opacity: 0;
@@ -150,7 +152,7 @@ a.card .card-glow {
 
 /* ── Card contents ──────────────────────────────────────────────────────── */
 .card-icon {
-  font-size: clamp(3rem, 10vw, 4.5rem);
+  font-size: clamp(2.1rem, 7vw, 3rem);
   line-height: 1;
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
   /* Gentle float on active card */
@@ -161,17 +163,18 @@ a.card .card-icon {
 }
 @keyframes float {
   0%,100% { transform: translateY(0);    }
-  50%     { transform: translateY(-8px); }
+  50%     { transform: translateY(-5px); }
 }
 
 .card-label {
-  font-size: clamp(0.85rem, 3vw, 1.1rem);
+  font-size: clamp(0.7rem, 2.4vw, 0.92rem);
   font-weight: 700;
   color: #fff;
   text-shadow: 0 2px 6px rgba(0,0,0,0.3);
   letter-spacing: 0.2px;
   text-align: center;
-  padding: 0 8px;
+  line-height: 1.15;
+  padding: 0 6px;
 }
 
 /* ── Coming-soon overlay ────────────────────────────────────────────────── */
@@ -183,7 +186,7 @@ a.card .card-icon {
 
 .soon-badge {
   position: absolute;
-  bottom: 14px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0,0,0,0.45);
@@ -201,6 +204,8 @@ a.card .card-icon {
 
 /* ── Responsive tweaks ──────────────────────────────────────────────────── */
 @media (max-width: 400px) {
-  .menu { padding: 32px 16px 32px; }
-  .grid { gap: 14px; }
+  .menu  { padding: 20px 12px 28px; }
+  .title { margin-bottom: 18px; }
+  .grid  { gap: 10px; }
+  .card  { border-radius: 16px; gap: 6px; }
 }
