@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+        maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>כמה ביחד? ➕</title>
+  <link rel="stylesheet" href="math.css" />
+</head>
+<body>
+
+  <a href="index.html" id="back-btn" title="Back to menu">&#8592;</a>
+
+  <div class="game">
+    <h1 class="title">כמה יש ביחד?</h1>
+
+    <!-- Progress dots -->
+    <div class="progress" id="progress"></div>
+
+    <div class="stage">
+      <!-- The two groups being added -->
+      <div class="equation" id="equation">
+        <div class="basket" id="groupA"></div>
+        <div class="op">+</div>
+        <div class="basket" id="groupB"></div>
+      </div>
+
+      <!-- The merged group, revealed after a correct answer -->
+      <div class="result" id="result"></div>
+    </div>
+
+    <!-- Number choices -->
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <!-- Full-screen celebration -->
+  <div class="celebration" id="celebration">
+    <div class="celeb-inner">
+      <div class="celeb-emoji" id="celebEmoji"></div>
+      <div class="celeb-text"  id="celebText"></div>
+    </div>
+  </div>
+
+  <script src="sound.js"></script>
+  <script src="speech.js"></script>
+  <script src="math.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+        maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>אותיות! א</title>
+  <link rel="stylesheet" href="letters.css" />
+</head>
+<body>
+
+  <a href="index.html" id="back-btn" title="Back to menu">&#8592;</a>
+
+  <div class="game">
+    <h1 class="title">איזו אות חסרה?</h1>
+
+    <!-- Progress dots -->
+    <div class="progress" id="progress"></div>
+
+    <!-- The word to complete: picture + word with a blank first letter -->
+    <div class="prompt" id="prompt" role="button" title="שמעו שוב">
+      <div class="prompt-emoji" id="promptEmoji"></div>
+      <div class="prompt-word"  id="promptWord"></div>
+    </div>
+
+    <!-- Letter choices -->
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <!-- Full-screen celebration -->
+  <div class="celebration" id="celebration">
+    <div class="celeb-inner">
+      <div class="celeb-emoji" id="celebEmoji"></div>
+      <div class="celeb-text"  id="celebText"></div>
+    </div>
+  </div>
+
+  <script src="sound.js"></script>
+  <script src="speech.js"></script>
+  <script src="letters.js"></script>
+</body>
+</html>
